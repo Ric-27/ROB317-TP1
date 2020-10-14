@@ -16,29 +16,42 @@ print("Dimension de l'image :",h,"lignes x",w,"colonnes")
 t1 = cv2.getTickCount()
 img1 = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
 img2 = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+imgf = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
 module = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
-orientation = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+orientation = np.zeros(img.shape)
+#sigma = 1
+
+#kernelGaussf = (1/864)*(np.array([[11,23,29,23,11],
+#                                  [23,48,62,48,23],
+#                                  [29,62,80,62,29],
+#                                  [23,48,62,48,23],
+#                                  [11,23,29,23,11]]))
+#imgf = cv2.filter2D(img,-1,kernel)
 
 for y in range(1,h-1):
   for x in range(1,w-1):
-    valdx = - 1*img[y-1, x-1]  + 1*img[y-1, x+1] - 2*img[y, x-1] + 2*img[y, x+1] - 1*img[y+1, x-1] + 1*img[y+1, x+1]
-    valdy = - 1*img[y-1, x-1]  - 2*img[y-1, x] - 1*img[y-1, x+1] + 1*img[y+1, x-1] + 2*img[y+1, x] + 1*img[y+1, x+1]
-    #img2[y,x] = min(max(valdy,0),255)
-    #img1[y,x] = min(max(valdx,0),255)
-    img2[y,x] = valdy
-    img1[y,x] = valdx
+    val = 5*img[y, x] - img[y-1, x] - img[y, x-1] - img[y+1, x] - img[y, x+1] 
+    imgf[y,x] = min(max(val,0),255)
 
+for y in range(1,h-1):
+  for x in range(1,w-1):
+    #img1[y,x] = sigma*(- img[y-1, x-1]  + img[y-1, x+1] - 2*img[y, x-1] + 2*img[y, x+1] - img[y+1, x-1] + img[y+1, x+1])
+    #img2[y,x] = sigma*(- img[y-1, x-1]  - 2*img[y-1, x] - img[y-1, x+1] + img[y+1, x-1] + 2*img[y+1, x] + img[y+1, x+1])
+    img1[y,x] = - imgf[y, x-1] + imgf[y, x+1]
+    img2[y,x] = - imgf[y-1, x] + imgf[y+1, x]
+    module[y,x] = np.sqrt(img1[y,x]**2+img2[y,x]**2)
+    if img1[y,x] == 0:
+      orientation[y,x] = math.pi/2
+    else:
+      orientation[y,x] = math.atan(img2[y,x]/img1[y,x])
+
+#print(np.max(img1))
+#print(np.min(img1))
 scaler = MinMaxScaler(feature_range=(0,255))
 img1scale = scaler.fit_transform(img1)
 img2scale = scaler.fit_transform(img2)
-
-for y in range(1,h-1):
-  for x in range(1,w-1):
-    module[y,x] = np.sqrt(img1scale[y,x]**2+img2scale[y,x]**2)
-    if img1scale[y,x] == 0:
-      orientation[y,x] = math.pi/2
-    else:
-      orientation[y,x] = math.atan(img2scale[y,x]/img1scale[y,x])
+#print(np.max(img1scale))
+#print(np.min(img1scale))
 
 modScale = scaler.fit_transform(module)
 oriScale = scaler.fit_transform(orientation)
@@ -60,7 +73,7 @@ plt.imshow(img2scale,cmap = 'gray')
 plt.title('Iy')
 
 plt.subplot(234)
-plt.imshow(modScale,cmap = 'gray')
+plt.imshow(module,cmap = 'gray')
 plt.title('Module')
 
 plt.subplot(235)
