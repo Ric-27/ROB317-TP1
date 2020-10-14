@@ -11,11 +11,38 @@ print("Type de l'image :",img.dtype)
 
 #Début du calcul
 t1 = cv2.getTickCount()
-Theta = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+#Theta = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+Theta = np.zeros(img.shape)
 # Mettre ici le calcul de la fonction d'intérêt de Harris
-#
-#
-#
+
+didx = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+didy = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
+mcorr = np.zeros([2,2])
+alpha = 0.06
+
+
+for y in range(1,h-1):
+  for x in range(1,w-1):
+    didx[y,x] =  - 1*img[y-1, x-1]  + 1*img[y-1, x+1] - 2*img[y, x-1] + 2*img[y, x+1] - 1*img[y+1, x-1] + 1*img[y+1, x+1]
+    didy[y,x] =  - 1*img[y-1, x-1]  - 2*img[y-1, x] - 1*img[y-1, x+1] + 1*img[y+1, x-1] + 2*img[y+1, x] + 1*img[y+1, x+1]
+
+k = 3
+for y in range(k,h-k):
+  for x in range(k,w-k):
+    mcorr = np.zeros([2,2])
+    for yy in range(y-k,y+k):
+        for xx in range (x-k,x+k):
+            mcorr[0,0] += didx[yy,xx] ** 2
+            mcorr[1,0] += didx[yy,xx] * didy[yy,xx]
+            mcorr[0,1] += didx[yy,xx] * didy[yy,xx]
+            mcorr[0,0] += didy[yy,xx] ** 2
+
+    [retval, eigenvalues, eigenvectors] = cv2.eigen(mcorr)
+    det = mcorr[0,0] * mcorr[1,1] + mcorr[1,0] * mcorr[0,1]
+    trace = mcorr[0,0] + mcorr[1,1]
+    Theta[y,x] = det - alpha * trace ** 2
+
+
 # Calcul des maxima locaux et seuillage
 Theta_maxloc = cv2.copyMakeBorder(Theta,0,0,0,0,cv2.BORDER_REPLICATE)
 d_maxloc = 3
