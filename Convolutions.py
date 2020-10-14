@@ -20,8 +20,8 @@ time = (t2 - t1)/ cv2.getTickFrequency()
 print("Méthode directe :",time,"s")
 
 plt.subplot(121)
-plt.imshow(img2,cmap = 'gray')
-plt.title('Convolution - Méthode Directe')
+plt.imshow(img,cmap = 'gray')
+plt.title('Img Originale')
 
 #Méthode filter2D
 t1 = cv2.getTickCount()
@@ -32,7 +32,7 @@ time = (t2 - t1)/ cv2.getTickFrequency()
 print("Méthode filter2D :",time,"s")
 
 plt.subplot(122)
-plt.imshow(img3,cmap = 'gray',vmin = 0.0,vmax = 255.0)
-plt.title('Convolution - filter2D')
+plt.imshow(img2,cmap = 'gray')
+plt.title('Convolution')
 
 plt.show()
