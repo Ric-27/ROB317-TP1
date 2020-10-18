@@ -4,7 +4,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 #Lecture image en niveau de gris et conversion en float64
-img=np.float64(cv2.imread('../Image_Pairs/Graffiti0.png',cv2.IMREAD_GRAYSCALE))
+img=np.float32(cv2.imread('../Image_Pairs/Graffiti0.png',cv2.IMREAD_GRAYSCALE))
 (h,w) = img.shape
 print("Dimension de l'image :",h,"lignes x",w,"colonnes")
 print("Type de l'image :",img.dtype)
@@ -17,35 +17,12 @@ Theta = np.zeros(img.shape)
 
 didx = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
 didy = cv2.copyMakeBorder(img,0,0,0,0,cv2.BORDER_REPLICATE)
-alpha = 0.10
+alpha = 0.1
 k = 1
 
-for y in range(1,h-1):
-  for x in range(1,w-1):
-    didx[y,x] =  - 1*img[y-1, x-1]  + 1*img[y-1, x+1] - 2*img[y, x-1] \
-      + 2*img[y, x+1] - 1*img[y+1, x-1] + 1*img[y+1, x+1]
-    didy[y,x] =  - 1*img[y-1, x-1]  - 2*img[y-1, x] - 1*img[y-1, x+1] \
-      + 1*img[y+1, x-1] + 2*img[y+1, x] + 1*img[y+1, x+1]
 
+Theta = cv2.cornerHarris(img,5,3,alpha)
 
-Ixx = didx ** 2
-Iyy = didy ** 2
-Ixy = didy * didx
-
-for y in range(k,h-k):
-  for x in range(k,w-k):
-    Hxx = 0
-    Hyy = 0
-    Hxy = 0
-    for yy in range(y-k,y+k):
-        for xx in range (x-k,x+k):
-            Hxx += Ixx[yy,xx]
-            Hyy += Iyy[yy,xx]
-            Hxy += Ixy[yy,xx]
-
-    det = Hxx* Hyy - Hxy * Hxy
-    trace = Hxx +Hyy
-    Theta[y,x] = det - alpha * trace **2
 
 # Calcul des maxima locaux et seuillage
 Theta_maxloc = cv2.copyMakeBorder(Theta,0,0,0,0,cv2.BORDER_REPLICATE)
